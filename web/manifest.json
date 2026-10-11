@@ -1,0 +1,9 @@
+{
+  "name": "Yene Bunna Ethiopian Coffee Marketplace",
+  "short_name": "Yene Bunna",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#120D0A",
+  "theme_color": "#D97706",
+  "description": "Direct-from-origin Ethiopian specialty coffee marketplace MVP in Flutter."
+}
