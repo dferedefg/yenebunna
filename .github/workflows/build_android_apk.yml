@@ -1,0 +1,55 @@
+name: Build Yene Bunna Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+env:
+  PARSE_APP_ID: DYcuDNOm8aWRjpRUtPk3UQCmCguPYrwLzOzsW4Bo
+  PARSE_CLIENT_KEY: 4D6sGLUzFF8bxxUVaLuhhCqxGuu3YLms1NgWJD3o
+  PARSE_SERVER_URL: https://parseapi.back4app.com
+
+jobs:
+  build-apk:
+    name: Compile Flutter Android Release APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flutter_bunna_app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter Stable
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Scaffold Android Platform
+        run: rm -rf android && flutter create . --platforms=android --org com.yenebunna
+
+      - name: Add Android Internet Permission
+        run: sed -i 's/<application/<uses-permission android:name="android.permission.INTERNET"\/>/' android/app/src/main/AndroidManifest.xml && sed -i 's/android.permission.INTERNET"\/>/android.permission.INTERNET"\/><application/' android/app/src/main/AndroidManifest.xml
+
+      - name: Install Dependencies & Run Tests
+        run: flutter pub get && flutter test
+
+      - name: Build Production Release APK
+        run: flutter build apk --release --dart-define=PARSE_APP_ID=$PARSE_APP_ID --dart-define=PARSE_CLIENT_KEY=$PARSE_CLIENT_KEY --dart-define=PARSE_SERVER_URL=$PARSE_SERVER_URL
+
+      - name: Upload Compiled Android APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yene-bunna-release-apk
+          path: flutter_bunna_app/build/app/outputs/flutter-apk/app-release.apk
